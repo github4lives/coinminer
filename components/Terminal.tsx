@@ -23,7 +23,6 @@ const TerminalInput: React.FC<TerminalInputProps> = ({ onCommand, isLoading }) =
         }
     };
     
-    // Auto-focus logic
     useEffect(() => {
         const focusInput = () => inputRef.current?.focus();
         focusInput();
@@ -62,17 +61,21 @@ export const Terminal: React.FC<TerminalProps> = ({ history, onCommand, isLoadin
   }, [history]);
 
   const renderEntry = (entry: HistoryEntry) => {
+    const commonProps = {
+        dangerouslySetInnerHTML: { __html: entry.text }
+    };
+
     switch (entry.type) {
       case 'input':
         return <p className="text-white"><span className="text-green-400 mr-2">{'>'}</span>{entry.text}</p>;
       case 'output':
-        return <p className="text-gray-300 whitespace-pre-wrap">{entry.text}</p>;
+        return <p className="text-gray-300 whitespace-pre-wrap" {...commonProps}></p>;
       case 'error':
-        return <p className="text-red-500">{entry.text}</p>;
+        return <p className="text-red-500" {...commonProps}></p>;
       case 'system':
-        return <p className="text-cyan-400 italic">{entry.text}</p>;
+        return <p className="text-cyan-400 italic" {...commonProps}></p>;
       default:
-        return <p>{entry.text}</p>;
+        return <p {...commonProps}></p>;
     }
   };
 
