@@ -1,5 +1,5 @@
 {
-  "name": "CoinMiner v2",
+  "name": "CoinMiner v2.1",
   "description": "a terminal-based mining game. mine for valuable materials, sell them at the refinery, and purchase upgrades to build your mining empire.",
   "requestFramePermissions": []
 }

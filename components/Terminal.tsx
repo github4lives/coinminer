@@ -5,7 +5,6 @@ interface TerminalProps {
   history: HistoryEntry[];
   onCommand: (command: string) => void;
   isLoading: boolean;
-  isMinigameActive: boolean; // Kept for prop compatibility, but unused
 }
 
 interface TerminalInputProps {
@@ -24,9 +23,16 @@ const TerminalInput: React.FC<TerminalInputProps> = ({ onCommand, isLoading }) =
         }
     };
     
+    // Auto-focus logic
     useEffect(() => {
-        inputRef.current?.focus();
+        const focusInput = () => inputRef.current?.focus();
+        focusInput();
+        document.addEventListener('click', focusInput);
+        return () => {
+            document.removeEventListener('click', focusInput);
+        }
     }, []);
+
 
     return (
         <div className="flex items-center">
@@ -60,7 +66,7 @@ export const Terminal: React.FC<TerminalProps> = ({ history, onCommand, isLoadin
       case 'input':
         return <p className="text-white"><span className="text-green-400 mr-2">{'>'}</span>{entry.text}</p>;
       case 'output':
-        return <p className="text-gray-300">{entry.text}</p>;
+        return <p className="text-gray-300 whitespace-pre-wrap">{entry.text}</p>;
       case 'error':
         return <p className="text-red-500">{entry.text}</p>;
       case 'system':
@@ -72,7 +78,7 @@ export const Terminal: React.FC<TerminalProps> = ({ history, onCommand, isLoadin
 
   return (
     <div className="flex-grow flex flex-col justify-end" onClick={() => document.querySelector('input')?.focus()}>
-        <div className="overflow-y-auto max-h-[calc(100vh-100px)]">
+        <div className="overflow-y-auto">
             {history.map(entry => (
                 <div key={entry.id} className="mb-1">
                     {renderEntry(entry)}

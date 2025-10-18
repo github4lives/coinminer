@@ -9,15 +9,24 @@ export type PickaxeType = 'stone' | 'iron' | 'steel' | 'diamond';
 export interface GameState {
   coins: number;
   energy: number;
-  maxEnergy: number;
   pickaxe: PickaxeType;
   inventory: Record<string, number>; // e.g., { coal: 50, iron: 20 }
+  isInfiniteEnergy: boolean;
 }
 
+export type MiningEventType = 'treasure' | 'geode' | 'relic' | 'spring' | 'cave_in';
+
 export interface MiningResult {
+  type: 'material' | 'event' | 'nothing';
   description: string;
-  foundMaterial: string | null;
-  quantity: number;
+  // For 'material' type
+  foundMaterial?: string;
+  quantity?: number;
+  // For 'event' type
+  eventName?: MiningEventType;
+  coinsFound?: number;
+  energyChange?: number;
+  foundItem?: string; // For relic, geode
 }
 
 export interface Upgrade {
