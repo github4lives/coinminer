@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Header } from './components/Header';
 import { Terminal } from './components/Terminal';
 import { StatusBar } from './components/StatusBar';
 import { Shop } from './components/Shop';
 import { Cheats } from './components/Cheats';
 import { Refinery } from './components/Refinery';
 import { sendMessageToAI, startChat } from './services/geminiService';
+import { useGameState } from './services/useGameState';
 import type { HistoryEntry } from './types';
 
 const App: React.FC = () => {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeView, setActiveView] = useState('terminal');
+  const addCredits = useGameState((state) => state.addCredits);
 
   const addHistoryEntry = (type: HistoryEntry['type'], text: string) => {
     setHistory(prev => [...prev, { id: Date.now(), type, text }]);
@@ -35,6 +38,18 @@ const App: React.FC = () => {
       return;
     }
 
+    if (lowerCaseCommand === 'credits_add_9999') {
+      addCredits(9999);
+      addHistoryEntry('system', 'Cheat activated: 9999 credits added.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (lowerCaseCommand === 'god_mode' || lowerCaseCommand === 'noclip') {
+      addHistoryEntry('system', `Cheat code '${lowerCaseCommand}' is not implemented yet.`);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await sendMessageToAI(command);
@@ -73,6 +88,7 @@ const App: React.FC = () => {
 
   return (
     <main className="bg-black text-white font-mono h-screen flex flex-col p-4">
+      <Header />
       <div className="border border-green-500 p-4 flex-grow flex flex-col">
         {renderView()}
       </div>
