@@ -87,9 +87,9 @@ const App: React.FC = () => {
   }
 
   return (
-    <main className="bg-black text-white font-mono h-screen flex flex-col p-4">
+    <main className="bg-black text-white font-mono h-screen flex flex-col p-2 sm:p-4">
       <Header />
-      <div className="border border-green-500 p-4 flex-grow flex flex-col">
+      <div className="border border-green-500 p-2 sm:p-4 flex-grow flex flex-col">
         {renderView()}
       </div>
       <StatusBar activeView={activeView} />
