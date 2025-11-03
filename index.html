@@ -1,11 +1,565 @@
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0"
-  }
-}
-</script>
-full contents of index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Absoukitely Crappy Thingy Ma Bob Maker</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-hue: 210;
+      --bg-sat: 75%;
+      --bg-light: 12%;
+      --accent: hsl(calc(var(--bg-hue) + 150), 80%, 60%);
+      --accent-soft: hsla(calc(var(--bg-hue) + 150), 80%, 60%, 0.15);
+      --card-bg: hsla(var(--bg-hue), 45%, 20%, 0.85);
+      --text: hsl(0, 0%, 95%);
+      --text-dim: hsl(0, 0%, 75%);
+      --success: #3cf0a5;
+      --warning: #ffc75f;
+      --error: #ff6f91;
+      --shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+      font-size: clamp(15px, 4vw, 18px);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, hsla(var(--bg-hue), var(--bg-sat), 18%, 0.9), hsl(var(--bg-hue), var(--bg-sat), var(--bg-light)) 75%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: clamp(1.25rem, 2vh, 3rem);
+      overflow-x: hidden;
+    }
+
+    .app-shell {
+      width: min(960px, 100%);
+      background: var(--card-bg);
+      border-radius: 26px;
+      padding: clamp(1.5rem, 4vw, 3rem);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(18px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header {
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2rem, 7vw, 3.75rem);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      line-height: 1.1;
+      text-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    header p {
+      color: var(--text-dim);
+      margin: 0.75rem auto 2rem auto;
+      max-width: 36ch;
+      font-size: 1.05rem;
+    }
+
+    main {
+      position: relative;
+      z-index: 2;
+    }
+
+    .generator-card {
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 22px;
+      padding: clamp(1.25rem, 3vw, 2rem);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .meme-stage {
+      display: grid;
+      gap: clamp(1rem, 2.5vw, 2rem);
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .meme-media {
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.06);
+      aspect-ratio: 4 / 3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .meme-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+
+    .meme-media:hover img {
+      transform: scale(1.04);
+    }
+
+    .meme-details {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .meme-title {
+      font-size: clamp(1.4rem, 4vw, 2.1rem);
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+
+    .meme-caption,
+    .meme-extras {
+      margin: 0;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .meme-extras span {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      padding: 0.25rem 0.7rem;
+      margin: 0.25rem 0.25rem 0 0;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 0.85rem 1.75rem;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      color: #0f0f15;
+      background: linear-gradient(135deg, var(--accent), #f9f871 90%);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    button:hover,
+    button:focus-visible {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 18px 35px rgba(0, 0, 0, 0.4);
+      outline: none;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.6;
+      transform: none;
+      filter: grayscale(0.3);
+    }
+
+    .status-line {
+      margin: 0;
+      text-align: center;
+      font-size: 0.95rem;
+      color: var(--warning);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .status-line[data-mood="success"] {
+      color: var(--success);
+    }
+
+    .status-line[data-mood="error"] {
+      color: var(--error);
+    }
+
+    .status-line strong {
+      color: var(--text);
+    }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover,
+    footer a:focus-visible {
+      text-decoration: underline;
+      outline: none;
+    }
+
+    .sparkles,
+    .floaties {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      animation: twinkle linear infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.4);
+      }
+    }
+
+    .floaty {
+      position: absolute;
+      font-size: clamp(1.5rem, 6vw, 3rem);
+      animation: floaty linear;
+      opacity: 0.85;
+    }
+
+    @keyframes floaty {
+      0% {
+        transform: translateY(100%) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.9;
+      }
+      90% {
+        opacity: 0.9;
+      }
+      100% {
+        transform: translateY(-140%) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+      .sparkles,
+      .floaties {
+        display: none;
+      }
+    }
+
+    @media (min-width: 720px) {
+      .meme-stage {
+        grid-template-columns: 1fr 0.95fr;
+        align-items: center;
+      }
+    }
+
+    @media (max-width: 540px) {
+      body {
+        padding: 1rem;
+      }
+
+      .app-shell {
+        padding: 1.25rem;
+      }
+
+      .meme-media {
+        aspect-ratio: 1;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" role="application" aria-labelledby="app-title">
+    <div class="sparkles" aria-hidden="true" id="sparkle-field"></div>
+    <div class="floaties" aria-hidden="true" id="floaty-field"></div>
+
+    <header>
+      <h1 id="app-title">Absoukitely Crappy Thingy Ma Bob Maker</h1>
+      <p>Certified™ to slap together memes, facts, and unsolicited life advice faster than you can say "why is this a thing?"</p>
+    </header>
+
+    <main>
+      <section class="generator-card" aria-live="polite">
+        <div class="meme-stage">
+          <figure class="meme-media">
+            <img id="meme-image" src="https://placekitten.com/640/480" alt="Awaiting meme magic" />
+          </figure>
+          <article class="meme-details">
+            <h2 class="meme-title" id="meme-title">Press the big shiny button to spawn chaos.</h2>
+            <p class="meme-caption" id="meme-caption">We currently have zero memes and maximum potential.</p>
+            <p class="meme-caption" id="meme-joke"></p>
+            <div class="meme-extras" id="meme-extras">
+              <span>#patience-is-a-virtue</span>
+              <span>#memelord-in-training</span>
+            </div>
+          </article>
+        </div>
+
+        <div class="controls">
+          <button id="generate-button" type="button">Summon an Absoukitely Chaotic Thingy</button>
+          <button id="vibe-button" type="button">Shuffle the Vibes™</button>
+        </div>
+
+        <p class="status-line" id="status-line" role="status">Status: <strong>Idle vibes engaged.</strong></p>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Powered entirely by keyless chaos from <a href="https://meme-api.com" target="_blank" rel="noreferrer noopener">meme-api.com</a>,
+        <a href="https://v2.jokeapi.dev" target="_blank" rel="noreferrer noopener">JokeAPI</a>, and
+        <a href="https://catfact.ninja" target="_blank" rel="noreferrer noopener">CatFact Ninja</a>.
+        No keys, no masters, just memes.
+      </p>
+      <p>Warning: Results may contain unexpected sincerity, rogue cats, and life advice you didn't order but definitely needed.</p>
+    </footer>
+  </div>
+
+  <script>
+    const state = {
+      chaosLevel: 0,
+      currentVibe: 0,
+      vibePalette: [
+        { hue: 195, sat: '80%', light: '13%' },
+        { hue: 292, sat: '70%', light: '16%' },
+        { hue: 123, sat: '65%', light: '14%' },
+        { hue: 35, sat: '85%', light: '17%' },
+        { hue: 260, sat: '68%', light: '12%' }
+      ],
+      memeFallbacks: [
+        {
+          url: 'https://placebear.com/640/480',
+          title: 'Emergency Bear Deploy™',
+          caption: 'When the memes fail, unleash the certified bear content.',
+          extras: ['#bear-with-us', '#totally-legit']
+        },
+        {
+          url: 'https://picsum.photos/seed/chaos/640/480',
+          title: 'Procedurally Generated Nonsense',
+          caption: 'AI could never. (It just did, actually.)',
+          extras: ['#randomized-chaos', '#algorithmic-art']
+        },
+        {
+          url: 'https://placekitten.com/600/450',
+          title: 'Break Glass for Emergency Cat',
+          caption: 'Feline overlords demanded representation.',
+          extras: ['#cat-approved', '#purr-engineering']
+        }
+      ],
+      compliments: [
+        "Certified chaos gremlin",
+        "Quantum meme mechanic",
+        "Intergalactic vibe curator",
+        "Snack-powered creativity goblin",
+        "Emoji linguistics professor"
+      ]
+    };
+
+    const elements = {
+      memeImage: document.getElementById('meme-image'),
+      memeTitle: document.getElementById('meme-title'),
+      memeCaption: document.getElementById('meme-caption'),
+      memeJoke: document.getElementById('meme-joke'),
+      memeExtras: document.getElementById('meme-extras'),
+      statusLine: document.getElementById('status-line'),
+      generateButton: document.getElementById('generate-button'),
+      vibeButton: document.getElementById('vibe-button'),
+      sparkleField: document.getElementById('sparkle-field'),
+      floatyField: document.getElementById('floaty-field')
+    };
+
+    function pick(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function updateStatus(message, mood = 'warning') {
+      elements.statusLine.innerHTML = 'Status: <strong>' + message + '</strong>';
+      elements.statusLine.dataset.mood = mood;
+    }
+
+    function toggleLoading(isLoading) {
+      elements.generateButton.disabled = isLoading;
+      elements.generateButton.textContent = isLoading ? 'Generating chaos…' : 'Summon an Absoukitely Chaotic Thingy';
+      if (isLoading) {
+        updateStatus('Charging up the nonsense reactor…');
+      }
+    }
+
+    async function fetchJson(url, options = {}) {
+      const response = await fetch(url, { ...options, headers: { 'Accept': 'application/json', ...(options.headers || {}) } });
+      if (!response.ok) {
+        throw new Error('Fetch failed: ' + response.status + ' ' + response.statusText);
+      }
+      return response.json();
+    }
+
+    async function conjureAbsoukitelyChaoticThingy() {
+      toggleLoading(true);
+      const chaosBadge = pick(state.compliments);
+      state.chaosLevel += 1;
+
+      try {
+        const [memeResult, jokeResult, factResult] = await Promise.allSettled([
+          fetchJson('https://meme-api.com/gimme'),
+          fetchJson('https://v2.jokeapi.dev/joke/Any?type=single'),
+          fetchJson('https://catfact.ninja/fact')
+        ]);
+
+        let memeData;
+        if (memeResult.status === 'fulfilled' && memeResult.value?.url) {
+          memeData = {
+            url: memeResult.value.url,
+            title: memeResult.value.title || 'Untitled Meme Drop',
+            caption: 'Sourced from r/' + (memeResult.value.subreddit || 'meme-mystery'),
+            extras: [
+              '#updoots-' + (memeResult.value.ups || '???'),
+              '#posted-by-' + (memeResult.value.author || 'anonymous-legend'),
+              '#chaos-level-' + state.chaosLevel
+            ],
+            link: memeResult.value.postLink
+          };
+        } else {
+          memeData = pick(state.memeFallbacks);
+          memeData.link = 'https://example.com/memes';
+        }
+
+        const jokeText = jokeResult.status === 'fulfilled' && jokeResult.value?.joke
+          ? jokeResult.value.joke
+          : 'Our joke hamster fell asleep. Please laugh politely anyway.';
+
+        const factText = factResult.status === 'fulfilled' && factResult.value?.fact
+          ? factResult.value.fact
+          : 'Fun fact: fallback facts are still technically facts.';
+
+        renderMeme({ memeData, jokeText, factText, chaosBadge });
+        updateStatus('Chaos delivered. You magnificent ' + chaosBadge + '!', 'success');
+      } catch (error) {
+        console.error('Chaos containment breach:', error);
+        const fallback = pick(state.memeFallbacks);
+        renderMeme({
+          memeData: fallback,
+          jokeText: 'Error 404: Joke not found. Please laugh at this sentence instead.',
+          factText: 'Fact: Technology is allergic to vibes sometimes.',
+          chaosBadge
+        });
+        updateStatus('Gremlins chewed the cables. We improvised.', 'error');
+      } finally {
+        toggleLoading(false);
+      }
+    }
+
+    function renderMeme({ memeData, jokeText, factText, chaosBadge }) {
+      elements.memeImage.src = memeData.url;
+      elements.memeImage.alt = memeData.title;
+      elements.memeTitle.textContent = memeData.title;
+      elements.memeCaption.textContent = memeData.caption + ' • Chaos badge: ' + chaosBadge.toUpperCase();
+      elements.memeJoke.textContent = '🎤 Joke drop: ' + jokeText;
+
+      elements.memeExtras.innerHTML = '';
+      const extras = [factText, ...(memeData.extras || [])];
+      extras.forEach(extra => {
+        const chip = document.createElement('span');
+        chip.textContent = typeof extra === 'string' ? extra : JSON.stringify(extra);
+        elements.memeExtras.appendChild(chip);
+      });
+    }
+
+    function shuffleVibes() {
+      state.currentVibe = (state.currentVibe + 1) % state.vibePalette.length;
+      const vibe = state.vibePalette[state.currentVibe];
+      document.documentElement.style.setProperty('--bg-hue', vibe.hue);
+      document.documentElement.style.setProperty('--bg-sat', vibe.sat);
+      document.documentElement.style.setProperty('--bg-light', vibe.light);
+      updateStatus('Vibe adjusted to spectrum #' + (state.currentVibe + 1) + '. Proceed with funky caution.');
+      sprinkleSparkles();
+    }
+
+    function sprinkleSparkles() {
+      if (!elements.sparkleField) return;
+      elements.sparkleField.innerHTML = '';
+      const sparkleCount = 24;
+      for (let i = 0; i < sparkleCount; i++) {
+        const sparkle = document.createElement('span');
+        sparkle.className = 'sparkle';
+        sparkle.style.left = Math.random() * 100 + '%';
+        sparkle.style.top = Math.random() * 100 + '%';
+        sparkle.style.animationDuration = 3 + Math.random() * 3 + 's';
+        sparkle.style.animationDelay = Math.random() * 4 + 's';
+        elements.sparkleField.appendChild(sparkle);
+      }
+    }
+
+    function launchFloaty() {
+      if (!elements.floatyField) return;
+      const emoji = pick(['😂', '🤖', '🔥', '🛸', '🥖', '🦄', '🥔', '💾', '🎉', '🙃']);
+      const floaty = document.createElement('span');
+      floaty.className = 'floaty';
+      floaty.textContent = emoji;
+      floaty.style.left = Math.random() * 90 + '%';
+      const duration = 8 + Math.random() * 8;
+      floaty.style.animationDuration = duration + 's';
+      floaty.style.fontSize = 'clamp(1.5rem, ' + (Math.random() * 6 + 4).toFixed(2) + 'vw, 3rem)';
+      elements.floatyField.appendChild(floaty);
+      setTimeout(() => floaty.remove(), duration * 1000);
+    }
+
+    function initialize() {
+      sprinkleSparkles();
+      shuffleVibes();
+      setInterval(launchFloaty, 3600);
+      launchFloaty();
+      elements.generateButton.addEventListener('click', conjureAbsoukitelyChaoticThingy);
+      elements.vibeButton.addEventListener('click', shuffleVibes);
+    }
+
+    initialize();
+  </script>
+</body>
+</html>
